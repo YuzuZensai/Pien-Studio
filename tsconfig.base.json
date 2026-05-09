@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@pien-studio/types": ["packages/types/src/index.ts"],
+      "@pien-studio/editor-core": ["packages/editor-core/src/index.ts"],
+      "@pien-studio/storage": ["packages/storage/src/index.ts"],
+      "@pien-studio/ui/*": ["packages/ui/src/*"]
+    }
+  }
+}

@@ -1,0 +1,40 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+:root {
+  --color-cream: #fff7ef;
+  --color-berry: #cc5d8f;
+  --color-wine: #5a2339;
+  --color-mint: #c9f0df;
+  --color-ink: #1f1b24;
+  --color-accent: #f5a3c7;
+  --color-accent-strong: #e782b1;
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f6f8;
+  --bg-a: #f5f6f8;
+  --bg-b: #f5f6f8;
+  --bg-c: #f5f6f8;
+}
+
+:root[data-theme="dark"] {
+  --color-cream: #1f2126;
+  --color-berry: #d979a9;
+  --color-wine: #f1d9e7;
+  --color-mint: #2d3a35;
+  --color-ink: #eef1f5;
+  --color-accent: #f3a9cc;
+  --color-accent-strong: #e88bb8;
+  --color-surface: #2a2c31;
+  --color-surface-2: #23252a;
+  --bg-a: #1b1d21;
+  --bg-b: #1b1d21;
+  --bg-c: #1b1d21;
+}
+
+body {
+  margin: 0;
+  color: var(--color-ink);
+  background: var(--bg-a), var(--bg-b), var(--bg-c);
+  min-height: 100vh;
+  font-family: "Zen Kaku Gothic New", "Noto Sans Thai", sans-serif;
+}

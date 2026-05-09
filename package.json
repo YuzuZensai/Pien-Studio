@@ -1,0 +1,30 @@
+{
+  "name": "pien-studio",
+  "private": true,
+  "packageManager": "bun@1.1.38",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:unit": "turbo run test",
+    "test:e2e": "playwright test",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^25.6.0",
+    "prettier": "^3.8.3",
+    "turbo": "^2.9.9",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.5"
+  }
+}

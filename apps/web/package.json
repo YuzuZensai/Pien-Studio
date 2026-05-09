@@ -1,0 +1,35 @@
+{
+  "name": "@pien-studio/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --webpack -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+"dependencies": {
+    "@mediapipe/face_detection": "~0.4.0",
+    "@pien-studio/editor-core": "workspace:*",
+    "@pien-studio/storage": "workspace:*",
+    "@pien-studio/types": "workspace:*",
+    "@radix-ui/react-select": "^2.2.6",
+    "@tensorflow-models/face-detection": "^1.0.3",
+    "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-backend-cpu": "^4.22.0",
+    "@tensorflow/tfjs-backend-webgl": "^4.22.0",
+    "@tensorflow/tfjs-converter": "^4.22.0",
+    "@tensorflow/tfjs-core": "^4.22.0",
+    "@vladmandic/face-api": "^1.7.15",
+    "class-variance-authority": "^0.7.1",
+    "lucide-react": "^1.14.0",
+    "next": "^16.2.4",
+    "next-intl": "^4.11.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5",
+    "tailwindcss": "^4.2.4",
+    "zustand": "^5.0.13"
+  }
+}
