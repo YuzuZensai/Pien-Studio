@@ -99,7 +99,7 @@ export function EditorCanvasStage(props: EditorCanvasStageProps) {
             faceOverlayLayerId={faceOverlayLayerId}
             faceBlurPreview={faceBlurPreview}
           />
-          {contextMenu ? (
+          {contextMenu && (
             <CanvasContextMenu
               isDark={isDark}
               x={contextMenu.x}
@@ -118,7 +118,7 @@ export function EditorCanvasStage(props: EditorCanvasStageProps) {
                 onCloseContextMenu();
               }}
             />
-          ) : null}
+          )}
         </div>
       </div>
     </div>

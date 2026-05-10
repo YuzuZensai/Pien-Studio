@@ -19,7 +19,10 @@ export async function detectFaceBoxes(image: HTMLImageElement): Promise<FaceBox[
     faceapi.nets.ageGenderNet.loadFromUri("https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights"),
   ]);
 
-  const TinyFaceDetectorOptions = (faceapi as unknown as { TinyFaceDetectorOptions: new (o: object) => object }).TinyFaceDetectorOptions;
+  type TinyFaceOptions = { inputSize: number; scoreThreshold: number };
+  const TinyFaceDetectorOptions = (
+    faceapi as unknown as { TinyFaceDetectorOptions: new (options: TinyFaceOptions) => TinyFaceOptions }
+  ).TinyFaceDetectorOptions;
 
   const passes = [
     { inputSize: 320, scoreThreshold: 0.5 },
@@ -41,9 +44,14 @@ export async function detectFaceBoxes(image: HTMLImageElement): Promise<FaceBox[
       (faceapi as unknown as {
         detectAllFaces: (
           img: HTMLImageElement,
-          options: { inputSize: number; scoreThreshold: number }
-        ) => Promise<FaceApiDet[]>
-      }).detectAllFaces(image, new TinyFaceDetectorOptions({ inputSize, scoreThreshold }))
+          options: TinyFaceOptions
+        ) => {
+          withFaceLandmarks: (useTinyLandmarkNet: boolean) => {
+            withAgeAndGender: () => Promise<FaceApiDet[]>;
+          };
+        };
+      })
+        .detectAllFaces(image, new TinyFaceDetectorOptions({ inputSize, scoreThreshold }))
         .withFaceLandmarks(true)
         .withAgeAndGender()
     )
@@ -56,7 +64,7 @@ export async function detectFaceBoxes(image: HTMLImageElement): Promise<FaceBox[
     const ix = Math.max(a.x, b.x);
     const iy = Math.max(a.y, b.y);
     const ix2 = Math.min(a.x + a.width, b.x + b.width);
-    const iy2 = Math.min(a.y + b.height, b.y + b.height);
+    const iy2 = Math.min(a.y + a.height, b.y + b.height);
     const inter = Math.max(0, ix2 - ix) * Math.max(0, iy2 - iy);
     const union = a.width * a.height + b.width * b.height - inter;
     return union > 0 ? inter / union : 0;

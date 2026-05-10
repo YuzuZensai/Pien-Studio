@@ -39,9 +39,11 @@ export function renderFaceBlurRegions(
   const legacyScaleY = image.naturalHeight / Math.max(1, targetHeight);
 
   for (const region of blur.regions) {
-    const hasSourceDims = typeof region.sourceWidth === "number" && typeof region.sourceHeight === "number" && region.sourceWidth > 0 && region.sourceHeight > 0;
-    const scaleX = hasSourceDims ? targetWidth / region.sourceWidth : 1;
-    const scaleY = hasSourceDims ? targetHeight / region.sourceHeight : 1;
+    const sourceWidth = region.sourceWidth ?? 0;
+    const sourceHeight = region.sourceHeight ?? 0;
+    const hasSourceDims = sourceWidth > 0 && sourceHeight > 0;
+    const scaleX = hasSourceDims ? targetWidth / sourceWidth : 1;
+    const scaleY = hasSourceDims ? targetHeight / sourceHeight : 1;
 
     const x = Math.max(0, Math.floor(region.x * scaleX));
     const y = Math.max(0, Math.floor(region.y * scaleY));

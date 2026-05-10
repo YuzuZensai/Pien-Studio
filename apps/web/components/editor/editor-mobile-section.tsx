@@ -110,7 +110,7 @@ export function EditorMobileSection(props: EditorMobileSectionProps) {
             faceBlurPreview={faceBlurPreview}
           />
         </div>
-        {tool === "face" ? (
+        {tool === "face" && (
           <p className={`mt-2 text-[11px] ${isDark ? "text-[#9aa1ad]" : "text-[#6b7280]"}`}>
             {faceStatus === "unsupported"
               ? labels.faceMlFailedShort
@@ -118,7 +118,7 @@ export function EditorMobileSection(props: EditorMobileSectionProps) {
                 ? labels.detectingFacesShort
                 : labels.faceDetectionTip(faceDetections.length)}
           </p>
-        ) : null}
+        )}
       </div>
 
       <div className={`mt-3 rounded-2xl border p-3 ${isDark ? "border-white/10 bg-[#2a2c31]" : "border-black/10 bg-white"}`}>

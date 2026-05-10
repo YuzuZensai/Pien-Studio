@@ -10,12 +10,13 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-"dependencies": {
+  "dependencies": {
     "@mediapipe/face_detection": "~0.4.0",
     "@pien-studio/editor-core": "workspace:*",
     "@pien-studio/storage": "workspace:*",
     "@pien-studio/types": "workspace:*",
     "@radix-ui/react-select": "^2.2.6",
+    "@tailwindcss/postcss": "^4.1.13",
     "@tensorflow-models/face-detection": "^1.0.3",
     "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-backend-cpu": "^4.22.0",
@@ -30,6 +31,12 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "tailwindcss": "^4.2.4",
+    "autoprefixer": "^10.4.21",
     "zustand": "^5.0.13"
+  },
+  "devDependencies": {
+    "fake-indexeddb": "^6.2.5",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2"
   }
 }
