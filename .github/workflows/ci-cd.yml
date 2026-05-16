@@ -76,6 +76,10 @@ jobs:
             type=sha,prefix=sha-
             type=raw,value=latest
 
+      - name: Prepare build metadata
+        id: build-meta
+        run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
@@ -84,3 +88,5 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            GIT_HASH=${{ steps.build-meta.outputs.short_sha }}

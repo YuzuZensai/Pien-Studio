@@ -1,3 +1,4 @@
+ARG GIT_HASH=unknown
 FROM oven/bun:1.3 AS deps
 WORKDIR /app
 
@@ -8,8 +9,10 @@ RUN bun install --frozen-lockfile
 RUN bun install --cwd /app/apps/web --frozen-lockfile
 
 FROM deps AS builder
+ARG GIT_HASH
 WORKDIR /app/apps/web
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_PUBLIC_GIT_HASH=$GIT_HASH
 RUN bun run build
 
 FROM oven/bun:1.3 AS runner
