@@ -284,14 +284,68 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       return withCommittedProject(state, nextProject, { clipboardLayer: cloneLayer(layer) });
     }),
 
-  pasteLayer: () =>
-    set((state) => {
-      if (!state.clipboardLayer) return state;
+  pasteLayer: () => {
+      const state = get();
+      if (!state.clipboardLayer) {
+        navigator.clipboard.read().then(async (clipboardItems) => {
+          for (const item of clipboardItems) {
+            for (const type of item.types) {
+              if (type.startsWith("image/")) {
+                const blob = await item.getType(type);
+                const reader = new FileReader();
+                const dataUrl = await new Promise<string>((resolve, reject) => {
+                  reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
+                  reader.onerror = reject;
+                  reader.readAsDataURL(blob);
+                });
+                const imageSize = await new Promise<{ width: number; height: number }>((resolve) => {
+                  const image = new Image();
+                  image.onload = () => resolve({ width: image.naturalWidth, height: image.naturalHeight });
+                  image.onerror = () =>
+                    resolve({ width: DEFAULT_IMAGE_IMPORT.fallbackWidth, height: DEFAULT_IMAGE_IMPORT.fallbackHeight });
+                  image.src = dataUrl;
+                });
+                const layer = createLayer("image", {
+                  name: "Image",
+                  sourceUri: dataUrl,
+                  x: DEFAULT_IMAGE_IMPORT.offsetX,
+                  y: DEFAULT_IMAGE_IMPORT.offsetY,
+                  width: Math.max(1, Math.round(imageSize.width)),
+                  height: Math.max(1, Math.round(imageSize.height)),
+                });
+                set((s) => withCommittedProject(s, addLayer(s.project, layer), { selectedLayerId: layer.id }));
+                return;
+              }
+            }
+          }
+          navigator.clipboard.readText().then((text) => {
+            if (text) {
+              const trimmed = text.trim();
+              if (trimmed.startsWith("data:image") || trimmed.startsWith("http") || trimmed.startsWith("blob:")) {
+                const image = new Image();
+                image.onload = () => {
+                  const layer = createLayer("image", {
+                    name: "Image",
+                    sourceUri: trimmed,
+                    x: DEFAULT_IMAGE_IMPORT.offsetX,
+                    y: DEFAULT_IMAGE_IMPORT.offsetY,
+                    width: Math.max(1, Math.round(image.naturalWidth)),
+                    height: Math.max(1, Math.round(image.naturalHeight)),
+                  });
+                  set((s) => withCommittedProject(s, addLayer(s.project, layer), { selectedLayerId: layer.id }));
+                };
+                image.src = trimmed;
+              }
+            }
+          });
+        }).catch(() => {});
+        return;
+      }
       const base = state.clipboardLayer;
       const pasted: Layer = { ...base, id: crypto.randomUUID(), x: base.x + 20, y: base.y + 20 };
       const nextProject = addLayer(state.project, pasted);
-      return withCommittedProject(state, nextProject, { selectedLayerId: pasted.id });
-    }),
+      set((s) => withCommittedProject(s, nextProject, { selectedLayerId: pasted.id }));
+    },
 
   resetProject: () => {
     releaseProjectObjectUrls(get().project);

@@ -1,6 +1,10 @@
 import React from "react";
 import type { EditorToolId } from "../store/editor-store";
-import { buildFacePreviews, loadImageFromUri, toFaceDetectionOverlays } from "../lib/face-detection-utils";
+import {
+  buildFacePreviews,
+  loadImageFromUri,
+  toFaceDetectionOverlays,
+} from "../lib/face-detection-utils";
 
 export type FaceDetectionOverlay = {
   x: number;
@@ -34,21 +38,35 @@ type UseFaceDetectionOptions = {
 };
 
 export function useFaceDetection(options: UseFaceDetectionOptions) {
-  const { tool, selectedLayerId, selectedImageLayer, activeLayerStillSelected } = options;
+  const {
+    tool,
+    selectedLayerId,
+    selectedImageLayer,
+    activeLayerStillSelected,
+  } = options;
   const selectedImageLayerId = selectedImageLayer?.id ?? null;
   const selectedImageSourceUri = selectedImageLayer?.sourceUri ?? null;
   const selectedImageWidth = selectedImageLayer?.width;
   const selectedImageHeight = selectedImageLayer?.height;
-  const [faceDetections, setFaceDetections] = React.useState<FaceDetectionOverlay[]>([]);
-  const [faceDetectionsLayerId, setFaceDetectionsLayerId] = React.useState<string | null>(null);
-  const [faceStatus, setFaceStatus] = React.useState<"idle" | "detecting" | "unsupported">("idle");
+  const [faceDetections, setFaceDetections] = React.useState<
+    FaceDetectionOverlay[]
+  >([]);
+  const [faceDetectionsLayerId, setFaceDetectionsLayerId] = React.useState<
+    string | null
+  >(null);
+  const [faceStatus, setFaceStatus] = React.useState<
+    "idle" | "detecting" | "unsupported"
+  >("idle");
   const [facePreviews, setFacePreviews] = React.useState<FacePreview[]>([]);
 
-  const resetFaceState = React.useCallback((status: "idle" | "detecting" | "unsupported" = "idle") => {
-    setFaceDetections((prev) => (prev.length === 0 ? prev : []));
-    setFaceDetectionsLayerId((prev) => (prev === null ? prev : null));
-    setFaceStatus((prev) => (prev === status ? prev : status));
-  }, []);
+  const resetFaceState = React.useCallback(
+    (status: "idle" | "detecting" | "unsupported" = "idle") => {
+      setFaceDetections((prev) => (prev.length === 0 ? prev : []));
+      setFaceDetectionsLayerId((prev) => (prev === null ? prev : null));
+      setFaceStatus((prev) => (prev === status ? prev : status));
+    },
+    [],
+  );
 
   React.useEffect(() => {
     let canceled = false;
@@ -60,21 +78,18 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
         return;
       }
 
-      resetFaceState("detecting");
-      const image = await loadImageFromUri(selectedImageSourceUri);
-      if (!image) {
-        if (!canceled) {
-          resetFaceState("idle");
-        }
-        return;
-      }
-
       try {
+        resetFaceState("detecting");
         const { detectFaceBoxes } = await import("../lib/face-ml");
-        const faces = await detectFaceBoxes(image);
+        const result = await detectFaceBoxes(selectedImageSourceUri);
         if (canceled) return;
         if (!activeLayerStillSelected(layerId) || tool !== "face") return;
-        const overlays = toFaceDetectionOverlays(faces, image, selectedImageWidth, selectedImageHeight);
+        const overlays = toFaceDetectionOverlays(
+          result.faces,
+          result,
+          selectedImageWidth,
+          selectedImageHeight,
+        );
         setFaceDetections(overlays);
         setFaceDetectionsLayerId(layerId);
         setFaceStatus((prev) => (prev === "idle" ? prev : "idle"));
@@ -90,7 +105,15 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
     return () => {
       canceled = true;
     };
-  }, [activeLayerStillSelected, resetFaceState, selectedImageHeight, selectedImageLayerId, selectedImageSourceUri, selectedImageWidth, tool]);
+  }, [
+    activeLayerStillSelected,
+    resetFaceState,
+    selectedImageHeight,
+    selectedImageLayerId,
+    selectedImageSourceUri,
+    selectedImageWidth,
+    tool,
+  ]);
 
   React.useEffect(() => {
     if (tool !== "face") {
@@ -108,7 +131,11 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
     let canceled = false;
 
     async function generateFacePreviews() {
-      if (tool !== "face" || !selectedImageSourceUri || faceDetections.length === 0) {
+      if (
+        tool !== "face" ||
+        !selectedImageSourceUri ||
+        faceDetections.length === 0
+      ) {
         setFacePreviews([]);
         return;
       }
@@ -119,7 +146,12 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
         return;
       }
 
-      const previews = buildFacePreviews(image, faceDetections, selectedImageWidth, selectedImageHeight);
+      const previews = buildFacePreviews(
+        image,
+        faceDetections,
+        selectedImageWidth,
+        selectedImageHeight,
+      );
 
       if (!canceled) setFacePreviews(previews);
     }
@@ -128,7 +160,13 @@ export function useFaceDetection(options: UseFaceDetectionOptions) {
     return () => {
       canceled = true;
     };
-  }, [faceDetections, selectedImageHeight, selectedImageSourceUri, selectedImageWidth, tool]);
+  }, [
+    faceDetections,
+    selectedImageHeight,
+    selectedImageSourceUri,
+    selectedImageWidth,
+    tool,
+  ]);
 
   return { faceDetections, faceDetectionsLayerId, facePreviews, faceStatus };
 }

@@ -109,6 +109,7 @@
   "ui": {
     "locale": "Locale",
     "darkMode": "Dark mode",
-    "lightMode": "Light mode"
+    "lightMode": "Light mode",
+    "systemMode": "System"
   }
 }

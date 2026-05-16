@@ -176,12 +176,12 @@ function FileMenu({
 }) {
   return (
     <div className="space-y-1">
+      <button type="button" onClick={onImportImage} className={`w-full rounded px-2 py-1 text-left ${hoverSubtleClass(isDark)}`}>{labels.importImage}</button>
       <button type="button" onClick={onSave} className={`w-full rounded px-2 py-1 text-left ${hoverSubtleClass(isDark)}`}>{labels.save}</button>
       <div className={`my-1 h-px ${dividerClass(isDark)}`} />
       <button type="button" onClick={onExportPng} className={`w-full rounded px-2 py-1 text-left ${hoverSubtleClass(isDark)}`}>{labels.exportPng}</button>
       <button type="button" onClick={onExportProjectFile} className={`w-full rounded px-2 py-1 text-left ${hoverSubtleClass(isDark)}`}>{labels.exportProjectFile}</button>
       <div className={`my-1 h-px ${dividerClass(isDark)}`} />
-      <button type="button" onClick={onImportImage} className={`w-full rounded px-2 py-1 text-left ${hoverSubtleClass(isDark)}`}>{labels.importImage}</button>
       <button type="button" onClick={onOpenCanvasSize} className={`w-full rounded px-2 py-1 text-left ${hoverSubtleClass(isDark)}`}>{labels.canvasSize} ({canvasWidth} x {canvasHeight})</button>
     </div>
   );

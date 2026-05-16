@@ -1,6 +1,11 @@
-import type { FaceDetectionOverlay, FacePreview } from "../hooks/use-face-detection";
+import type {
+  FaceDetectionOverlay,
+  FacePreview,
+} from "../hooks/use-face-detection";
 
-export async function loadImageFromUri(uri: string): Promise<HTMLImageElement | null> {
+export async function loadImageFromUri(
+  uri: string,
+): Promise<HTMLImageElement | null> {
   const image = new Image();
   image.crossOrigin = "anonymous";
   await new Promise<void>((resolve) => {
@@ -13,8 +18,15 @@ export async function loadImageFromUri(uri: string): Promise<HTMLImageElement | 
 }
 
 export function toFaceDetectionOverlays(
-  faces: Array<{ x: number; y: number; width: number; height: number; gender?: string; genderScore?: number }>,
-  image: HTMLImageElement,
+  faces: Array<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    gender?: string;
+    genderScore?: number;
+  }>,
+  image: { naturalWidth: number; naturalHeight: number },
   layerWidth?: number,
   layerHeight?: number,
 ): FaceDetectionOverlay[] {
@@ -25,8 +37,11 @@ export function toFaceDetectionOverlays(
 
   return faces.map((face, index) => {
     const genderLabel = face.gender ?? "unknown";
-    const scoreLabel = face.genderScore != null ? `${Math.round(face.genderScore * 100)}%` : "";
-    const label = scoreLabel ? `Person ${index + 1} - ${genderLabel} ${scoreLabel}` : `Person ${index + 1} - ${genderLabel}`;
+    const scoreLabel =
+      face.genderScore != null ? `${Math.round(face.genderScore * 100)}%` : "";
+    const label = scoreLabel
+      ? `Person ${index + 1} - ${genderLabel} ${scoreLabel}`
+      : `Person ${index + 1} - ${genderLabel}`;
 
     return {
       x: face.x * scaleX,
@@ -71,7 +86,10 @@ export function buildFacePreviews(
       const ctx = canvas.getContext("2d");
       if (!ctx) return { id: `face-${index + 1}`, src: "" };
       ctx.drawImage(image, sx, sy, cw, ch, 0, 0, canvas.width, canvas.height);
-      return { id: `face-${index + 1}`, src: canvas.toDataURL("image/jpeg", 0.9) };
+      return {
+        id: `face-${index + 1}`,
+        src: canvas.toDataURL("image/jpeg", 0.9),
+      };
     })
     .filter((preview) => preview.src);
 }

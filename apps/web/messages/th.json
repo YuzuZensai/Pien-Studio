@@ -109,6 +109,7 @@
   "ui": {
     "locale": "ภาษา",
     "darkMode": "โหมดมืด",
-    "lightMode": "โหมดสว่าง"
+    "lightMode": "โหมดสว่าง",
+    "systemMode": "ระบบ"
   }
 }

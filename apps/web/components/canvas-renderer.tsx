@@ -3,9 +3,12 @@
 import React from "react";
 import NextImage from "next/image";
 import { RotateCw } from "lucide-react";
-import { CANVAS_HANDLE_BASE_SIZE, CANVAS_ROTATE_HANDLE_BASE_SIZE } from "../lib/editor-constants";
+import {
+  CANVAS_HANDLE_BASE_SIZE,
+  CANVAS_ROTATE_HANDLE_BASE_SIZE,
+} from "../lib/editor-constants";
 import { buildFaceLabelOverlays } from "../lib/canvas-geometry";
-import { renderFaceBlurRegions } from "../lib/face-blur-renderer";
+import { renderImageWithFaceBlur } from "../lib/face-blur-renderer";
 import { useCanvasInteractions } from "../hooks/use-canvas-interactions";
 import { useTranslations } from "../hooks/use-translations";
 import type { FaceBlurMethod, Layer } from "@pien-studio/types";
@@ -27,7 +30,13 @@ interface CanvasRendererProps {
   onContextMenu?: (x: number, y: number) => void;
   isDark: boolean;
   tool?: "pointer" | "hand" | "face";
-  faceDetections?: { x: number; y: number; width: number; height: number; label?: string }[];
+  faceDetections?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    label?: string;
+  }[];
   faceOverlayLayerId?: string | null;
   faceBlurPreview?: {
     layerId: string;
@@ -49,7 +58,13 @@ function BlurredImageLayer({
   faceBlurOverride?: {
     method: FaceBlurMethod;
     amount: number;
-    regions: { x: number; y: number; width: number; height: number; censorColor?: string }[];
+    regions: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      censorColor?: string;
+    }[];
     censorColor?: string;
   } | null;
 }) {
@@ -65,10 +80,8 @@ function BlurredImageLayer({
     const cw = canvas.width;
     const ch = canvas.height;
     ctx.clearRect(0, 0, cw, ch);
-    ctx.drawImage(image, 0, 0, cw, ch);
     const blur = faceBlurOverride ?? layer.faceBlur;
-    if (!blur || blur.regions.length === 0) return;
-    renderFaceBlurRegions(ctx, image, blur, cw, ch);
+    renderImageWithFaceBlur(ctx, image, blur, cw, ch);
   }, [faceBlurOverride, layer.faceBlur]);
 
   React.useEffect(() => {
@@ -91,7 +104,14 @@ function BlurredImageLayer({
     draw();
   }, [draw, width, height]);
 
-  return <canvas ref={canvasRef} width={Math.max(1, Math.round(width))} height={Math.max(1, Math.round(height))} className="pointer-events-none h-full w-full rounded object-cover" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      width={Math.max(1, Math.round(width))}
+      height={Math.max(1, Math.round(height))}
+      className="pointer-events-none h-full w-full rounded object-cover"
+    />
+  );
 }
 
 export function CanvasRenderer({
@@ -147,15 +167,35 @@ export function CanvasRenderer({
   });
 
   const faceLabelOverlays = React.useMemo(() => {
-    if (tool !== "face" || !faceOverlayLayerId || faceDetections.length === 0) return [];
-    return buildFaceLabelOverlays(layers, faceOverlayLayerId, faceDetections, viewport);
-  }, [faceDetections, faceOverlayLayerId, layers, tool, viewport.scale, viewport.x, viewport.y]);
+    if (tool !== "face" || !faceOverlayLayerId || faceDetections.length === 0)
+      return [];
+    return buildFaceLabelOverlays(
+      layers,
+      faceOverlayLayerId,
+      faceDetections,
+      viewport,
+    );
+  }, [
+    faceDetections,
+    faceOverlayLayerId,
+    layers,
+    tool,
+    viewport.scale,
+    viewport.x,
+    viewport.y,
+  ]);
 
   return (
     <div
       ref={containerRef}
       className="relative overflow-hidden"
-      style={{ width: "100%", height: "100%", touchAction: "none", userSelect: "none", cursor: tool === "hand" || isSpacePan ? "grab" : "default" }}
+      style={{
+        width: "100%",
+        height: "100%",
+        touchAction: "none",
+        userSelect: "none",
+        cursor: tool === "hand" || isSpacePan ? "grab" : "default",
+      }}
       onPointerDown={(e) => {
         if (tool === "pointer" && e.button === 0) onSelectLayer(null);
         onContainerPointerDown(e);
@@ -183,18 +223,26 @@ export function CanvasRenderer({
           willChange: "transform",
           transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.scale})`,
           transformOrigin: "0 0",
-          boxShadow: "0 0 0 1px var(--color-accent-strong)",
-          background: isDark ? "#17181b" : "#ffffff",
+          outline: `${2 / viewport.scale}px solid var(--color-accent-strong)`,
+          background:
+            "linear-gradient(45deg, #d0d0d0 25%, transparent 25%), linear-gradient(-45deg, #d0d0d0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #d0d0d0 75%), linear-gradient(-45deg, transparent 75%, #d0d0d0 75%)",
+          backgroundSize: "16px 16px",
+          backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0px",
         }}
       >
         {layers.map((layer, idx) => {
           const isSelected = layer.id === selectedLayerId;
           const isImage = layer.type === "image";
-          const layerWidth = layer.width ?? (isImage ? Math.round(200 * layer.scale) : undefined);
-          const layerHeight = layer.height ?? (isImage ? Math.round(150 * layer.scale) : undefined);
+          const layerWidth =
+            layer.width ??
+            (isImage ? Math.round(200 * layer.scale) : undefined);
+          const layerHeight =
+            layer.height ??
+            (isImage ? Math.round(150 * layer.scale) : undefined);
           const handleSize = CANVAS_HANDLE_BASE_SIZE / viewport.scale;
           const handleSizePx = `${handleSize}px`;
-          const largeHandleSize = CANVAS_ROTATE_HANDLE_BASE_SIZE / viewport.scale;
+          const largeHandleSize =
+            CANVAS_ROTATE_HANDLE_BASE_SIZE / viewport.scale;
           const largeHandleSizePx = `${largeHandleSize}px`;
 
           return (
@@ -209,8 +257,12 @@ export function CanvasRenderer({
                 transform: `rotate(${layer.rotation}deg)`,
                 opacity: layer.opacity,
                 cursor: "move",
-                border: isSelected ? "2px solid var(--color-accent-strong)" : "1px dashed transparent",
-                outline: isSelected ? "2px solid var(--color-accent-strong)" : "none",
+                border: isSelected
+                  ? "2px solid var(--color-accent-strong)"
+                  : "1px dashed transparent",
+                outline: isSelected
+                  ? "2px solid var(--color-accent-strong)"
+                  : "none",
                 outlineOffset: "2px",
                 zIndex: idx,
               }}
@@ -218,13 +270,19 @@ export function CanvasRenderer({
               onClick={() => onSelectLayer(layer.id)}
             >
               {isImage && layer.sourceUri ? (
-                (faceBlurPreview && faceBlurPreview.layerId === layer.id && faceBlurPreview.regions.length > 0) ||
+                (faceBlurPreview &&
+                  faceBlurPreview.layerId === layer.id &&
+                  faceBlurPreview.regions.length > 0) ||
                 (layer.faceBlur && layer.faceBlur.regions.length > 0) ? (
                   <BlurredImageLayer
                     layer={layer}
                     width={layerWidth ?? 1}
                     height={layerHeight ?? 1}
-                    faceBlurOverride={faceBlurPreview && faceBlurPreview.layerId === layer.id ? faceBlurPreview : null}
+                    faceBlurOverride={
+                      faceBlurPreview && faceBlurPreview.layerId === layer.id
+                        ? faceBlurPreview
+                        : null
+                    }
                   />
                 ) : (
                   <NextImage
@@ -271,41 +329,85 @@ export function CanvasRenderer({
                   <button
                     type="button"
                     className="absolute rounded-full border-2 border-white/80 bg-[var(--color-accent-strong)] shadow"
-                    style={{ width: handleSizePx, height: handleSizePx, top: -handleSize / 2, left: -handleSize / 2 }}
+                    style={{
+                      width: handleSizePx,
+                      height: handleSizePx,
+                      top: -handleSize / 2,
+                      left: -handleSize / 2,
+                    }}
                     onPointerDown={(e) => onResizeHandleDown(e, layer, "tl")}
                     title={t("editor.resize")}
                   />
                   <button
                     type="button"
                     className="absolute rounded-full border-2 border-white/80 bg-[var(--color-accent-strong)] shadow"
-                    style={{ width: handleSizePx, height: handleSizePx, top: -handleSize / 2, right: -handleSize / 2 }}
+                    style={{
+                      width: handleSizePx,
+                      height: handleSizePx,
+                      top: -handleSize / 2,
+                      right: -handleSize / 2,
+                    }}
                     onPointerDown={(e) => onResizeHandleDown(e, layer, "tr")}
                     title={t("editor.resize")}
                   />
                   <button
                     type="button"
                     className="absolute rounded-full border-2 border-white/80 bg-[var(--color-accent-strong)] shadow"
-                    style={{ width: handleSizePx, height: handleSizePx, bottom: -handleSize / 2, left: -handleSize / 2 }}
+                    style={{
+                      width: handleSizePx,
+                      height: handleSizePx,
+                      bottom: -handleSize / 2,
+                      left: -handleSize / 2,
+                    }}
                     onPointerDown={(e) => onResizeHandleDown(e, layer, "bl")}
                     title={t("editor.resize")}
                   />
                   <button
                     type="button"
                     className="absolute rounded-full border-2 border-white/80 bg-[var(--color-accent-strong)] shadow"
-                    style={{ width: handleSizePx, height: handleSizePx, bottom: -handleSize / 2, right: -handleSize / 2 }}
+                    style={{
+                      width: handleSizePx,
+                      height: handleSizePx,
+                      bottom: -handleSize / 2,
+                      right: -handleSize / 2,
+                    }}
                     onPointerDown={(e) => onResizeHandleDown(e, layer, "br")}
                     title={t("editor.resize")}
                   />
-                  <div className="absolute pointer-events-none" style={{ top: -largeHandleSize, left: "50%", transform: "translateX(-50%)", height: largeHandleSize }}>
-                    <div className="w-px bg-[var(--color-accent-strong)]" style={{ width: "1px", height: "100%", marginLeft: "0px" }} />
+                  <div
+                    className="absolute pointer-events-none"
+                    style={{
+                      top: -largeHandleSize,
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      height: largeHandleSize,
+                    }}
+                  >
+                    <div
+                      className="w-px bg-[var(--color-accent-strong)]"
+                      style={{
+                        width: "1px",
+                        height: "100%",
+                        marginLeft: "0px",
+                      }}
+                    />
                     <button
                       type="button"
-                      className="absolute top-0 left-1/2 -translate-x-1/2 rounded-full border-2 border-white/90 bg-[var(--color-accent-strong)] shadow flex items-center justify-center"
-                      style={{ width: largeHandleSizePx, height: largeHandleSizePx }}
+                      className="pointer-events-auto absolute top-0 left-1/2 -translate-x-1/2 rounded-full border-2 border-white/90 bg-[var(--color-accent-strong)] shadow flex items-center justify-center"
+                      style={{
+                        width: largeHandleSizePx,
+                        height: largeHandleSizePx,
+                      }}
                       onPointerDown={(e) => onRotateHandleDown(e, layer)}
                       title={t("editor.rotate")}
                     >
-                      <RotateCw className="text-white" style={{ width: handleSize * 0.6, height: handleSize * 0.6 }} />
+                      <RotateCw
+                        className="text-white"
+                        style={{
+                          width: handleSize * 0.6,
+                          height: handleSize * 0.6,
+                        }}
+                      />
                     </button>
                   </div>
                 </>

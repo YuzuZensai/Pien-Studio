@@ -1,5 +1,5 @@
 import type { Layer, Project } from "@pien-studio/types";
-import { renderFaceBlurRegions } from "./face-blur-renderer";
+import { renderImageWithFaceBlur } from "./face-blur-renderer";
 
 type ExportOptions = {
   isDark: boolean;
@@ -20,7 +20,11 @@ function loadImage(src: string) {
   });
 }
 
-function drawFallbackLayer(ctx: CanvasRenderingContext2D, layer: Layer, isDark: boolean) {
+function drawFallbackLayer(
+  ctx: CanvasRenderingContext2D,
+  layer: Layer,
+  isDark: boolean,
+) {
   const text = layer.name ?? layer.type;
   const width = Math.max(80, layer.width ?? 120);
   const height = Math.max(34, layer.height ?? 40);
@@ -45,15 +49,24 @@ function drawFallbackLayer(ctx: CanvasRenderingContext2D, layer: Layer, isDark: 
   ctx.stroke();
 
   ctx.fillStyle = isDark ? "#d7dae0" : "#1f2430";
-  ctx.font = "600 12px ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif";
+  ctx.font =
+    "600 12px ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(text, width / 2, height / 2);
 }
 
-async function drawLayer(ctx: CanvasRenderingContext2D, layer: Layer, isDark: boolean) {
-  const width = layer.width ?? (layer.type === "image" ? Math.round(200 * layer.scale) : 120);
-  const height = layer.height ?? (layer.type === "image" ? Math.round(150 * layer.scale) : 40);
+async function drawLayer(
+  ctx: CanvasRenderingContext2D,
+  layer: Layer,
+  isDark: boolean,
+) {
+  const width =
+    layer.width ??
+    (layer.type === "image" ? Math.round(200 * layer.scale) : 120);
+  const height =
+    layer.height ??
+    (layer.type === "image" ? Math.round(150 * layer.scale) : 40);
 
   ctx.save();
   ctx.globalAlpha = clampOpacity(layer.opacity);
@@ -64,10 +77,7 @@ async function drawLayer(ctx: CanvasRenderingContext2D, layer: Layer, isDark: bo
   if ((layer.type === "image" || layer.type === "sticker") && layer.sourceUri) {
     try {
       const image = await loadImage(layer.sourceUri);
-      ctx.drawImage(image, 0, 0, width, height);
-      if (layer.faceBlur && layer.faceBlur.regions.length > 0) {
-        renderFaceBlurRegions(ctx, image, layer.faceBlur, width, height);
-      }
+      renderImageWithFaceBlur(ctx, image, layer.faceBlur, width, height);
     } catch {
       drawFallbackLayer(ctx, layer, isDark);
     }
@@ -78,8 +88,14 @@ async function drawLayer(ctx: CanvasRenderingContext2D, layer: Layer, isDark: bo
   ctx.restore();
 }
 
-export async function exportProjectAsPng(project: Project, options: ExportOptions) {
-  const pixelRatio = Math.max(1, Math.floor(options.pixelRatio ?? window.devicePixelRatio ?? 1));
+export async function exportProjectAsPng(
+  project: Project,
+  options: ExportOptions,
+) {
+  const pixelRatio = Math.max(
+    1,
+    Math.floor(options.pixelRatio ?? window.devicePixelRatio ?? 1),
+  );
   const { width, height } = project.canvas;
   const canvas = document.createElement("canvas");
   canvas.width = width * pixelRatio;
@@ -89,8 +105,6 @@ export async function exportProjectAsPng(project: Project, options: ExportOption
   if (!ctx) throw new Error("Cannot create export canvas context");
 
   ctx.scale(pixelRatio, pixelRatio);
-  ctx.fillStyle = options.isDark ? "#17181b" : "#ffffff";
-  ctx.fillRect(0, 0, width, height);
 
   for (const layer of project.layers) {
     await drawLayer(ctx, layer, options.isDark);
