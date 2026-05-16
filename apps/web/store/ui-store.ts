@@ -2,16 +2,22 @@
 
 import { create } from "zustand";
 
-export type AppTheme = "light" | "dark";
+export type AppTheme = "light" | "dark" | "system";
 export type AppLocale = "en" | "th" | "ja";
 
 const THEME_KEY = "pien.ui.theme";
 const LOCALE_KEY = "pien.ui.locale";
 
+function getSystemTheme(): "light" | "dark" {
+  if (typeof window === "undefined") return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
 function readTheme(): AppTheme {
   if (typeof window === "undefined") return "light";
   const value = window.localStorage.getItem(THEME_KEY);
-  return value === "light" ? "light" : "dark";
+  if (value === "light" || value === "dark" || value === "system") return value;
+  return "system";
 }
 
 function readLocale(): AppLocale {
@@ -23,7 +29,12 @@ function readLocale(): AppLocale {
 
 function applyTheme(theme: AppTheme): void {
   if (typeof document === "undefined") return;
-  document.documentElement.setAttribute("data-theme", theme);
+  const resolved = theme === "system" ? getSystemTheme() : theme;
+  document.documentElement.setAttribute("data-theme", resolved);
+}
+
+export function isDarkTheme(theme: AppTheme): boolean {
+  return theme === "system" ? getSystemTheme() === "dark" : theme === "dark";
 }
 
 type UiState = {

@@ -6,7 +6,7 @@ import { addLayer, createLayer, createProject, parseProjectFile, setCanvasSize }
 import type { Project } from "@pien-studio/types";
 import { deleteProject, duplicateProject, loadProjects, upsertProject } from "@pien-studio/storage";
 import { useEditorStore } from "../store/editor-store";
-import { useUiStore } from "../store/ui-store";
+import { useUiStore, isDarkTheme } from "../store/ui-store";
 import { accentButtonClass, cx, mutedSurfaceClass, subtleButtonClass, surfaceClass } from "../lib/theme";
 import { UiPreferences } from "../components/ui-preferences";
 import { useAssetCleanupJob } from "../hooks/use-asset-cleanup-job";
@@ -23,7 +23,7 @@ export default function HomePage() {
   const [projectPendingDelete, setProjectPendingDelete] = React.useState<Project | null>(null);
   const projectInputRef = React.useRef<HTMLInputElement | null>(null);
   const imageInputRef = React.useRef<HTMLInputElement | null>(null);
-  const isDark = theme === "dark";
+  const isDark = isDarkTheme(theme);
 
   const refreshProjects = React.useCallback(async () => {
     setProjects(await loadProjects());

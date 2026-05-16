@@ -2,13 +2,14 @@
 
 import React from "react";
 import { useUiStore } from "../store/ui-store";
+import { isDarkTheme } from "../store/ui-store";
 import { cx, subtleButtonClass } from "../lib/theme";
 import { useTranslations } from "../hooks/use-translations";
 
 export function UiPreferences({ compact = false }: { compact?: boolean }) {
   const { theme, locale, setTheme, setLocale } = useUiStore((s) => s);
   const { t } = useTranslations();
-  const isDark = theme === "dark";
+  const isDark = isDarkTheme(theme);
   const wrapperHeight = compact ? "h-7" : "h-9";
   const textSize = compact ? "text-[10px]" : "text-xs";
 
@@ -33,10 +34,13 @@ export function UiPreferences({ compact = false }: { compact?: boolean }) {
       </label>
       <button
         type="button"
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        onClick={() => {
+          const next = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
+          setTheme(next);
+        }}
         className={cx("rounded border px-3 font-semibold", subtleButtonClass(isDark), wrapperHeight, textSize)}
       >
-        {theme === "dark" ? t("ui.darkMode") : t("ui.lightMode")}
+        {theme === "dark" ? t("ui.darkMode") : theme === "system" ? t("ui.systemMode") : t("ui.lightMode")}
       </button>
     </div>
   );

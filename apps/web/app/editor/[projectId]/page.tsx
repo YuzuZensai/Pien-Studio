@@ -4,7 +4,7 @@ import React from "react";
 import { useParams } from "next/navigation";
 import { MousePointer2, Hand, ScanFace, Type, ImagePlus } from "lucide-react";
 import { useEditorStore } from "../../../store/editor-store";
-import { useUiStore } from "../../../store/ui-store";
+import { useUiStore, isDarkTheme } from "../../../store/ui-store";
 import { CanvasSizeModal } from "../../../components/canvas-size-modal";
 import { EditorCanvasStage } from "../../../components/editor/editor-canvas-stage";
 import { EditorHeader } from "../../../components/editor/editor-header";
@@ -148,7 +148,7 @@ export default function EditorPage() {
     t,
   });
 
-  const isDark = theme === "dark";
+  const isDark = isDarkTheme(theme);
   const { width: cw, height: ch } = project.canvas;
 
   const handleSave = React.useCallback(async () => {
